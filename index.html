@@ -507,7 +507,8 @@ function render() {
           <div class="event-name">${ev.name}</div>
           <div class="event-hint">${ev.hint}</div>
         </div>
-        <input class="event-input" id="inp-${ev.id}" type="text" inputmode="decimal"
+        <input class="event-input" id="inp-${ev.id}" type="text"
+          inputmode="${ev.type==='track_mid'||ev.type==='track_long' ? 'text' : 'decimal'}"
           placeholder="${ev.placeholder}" value="${vals[ev.id]||''}" autocomplete="off" spellcheck="false"/>
         <div class="event-pts ${pts>=1000?'elite':pts>0?'has-pts':''}" id="pts-${ev.id}">${pts>0?pts:'—'}</div>
       `;
