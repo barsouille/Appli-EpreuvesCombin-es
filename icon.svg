@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="80" fill="#0e0f11"/>
+  <rect x="36" y="36" width="440" height="440" rx="60" fill="#141518"/>
+  <!-- Gold accent bar -->
+  <rect x="60" y="340" width="392" height="8" rx="4" fill="#E8B84B" opacity="0.25"/>
+  <!-- Stylized athlete / track lines -->
+  <rect x="60" y="310" width="160" height="4" rx="2" fill="#E8B84B" opacity="0.4"/>
+  <rect x="60" y="326" width="220" height="4" rx="2" fill="#E8B84B" opacity="0.25"/>
+  <!-- Big number / text: 7 / 10 -->
+  <text x="256" y="295" font-family="Georgia,serif" font-weight="700" font-size="220" fill="#E8B84B" text-anchor="middle" dominant-baseline="auto" opacity="0.95">7</text>
+  <!-- small label -->
+  <text x="256" y="390" font-family="Georgia,serif" font-size="52" fill="#E8B84B" text-anchor="middle" opacity="0.6" letter-spacing="6">PTS</text>
+</svg>

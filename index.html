@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#E8B84B">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Heptathlon">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Épreuves Combinées — Calculateur de Points</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #E8B84B;
+    --gold-dim: #c49a36;
+    --gold-pale: rgba(232,184,75,0.12);
+    --gold-glow: rgba(232,184,75,0.25);
+    --bg: #0e0f11;
+    --bg2: #141518;
+    --bg3: #1c1e22;
+    --bg4: #23252b;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.13);
+    --text: #f0ede8;
+    --text2: #8a8680;
+    --text3: #5a5854;
+    --green: #4CAF7D;
+    --radius: 10px;
+    --radius-lg: 16px;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+    padding-top: var(--safe-top);
+    padding-bottom: var(--safe-bottom);
+  }
+
+  /* ── INSTALL BANNER ── */
+  #install-banner {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: var(--gold);
+    color: #0e0f11;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  #install-banner.show { display: flex; }
+  #install-banner button {
+    background: #0e0f11;
+    color: var(--gold);
+    border: none;
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  #install-dismiss {
+    background: transparent !important;
+    color: rgba(14,15,17,0.6) !important;
+    padding: 6px 8px !important;
+    font-size: 18px !important;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    padding: 32px 20px 24px;
+    padding-top: calc(32px + var(--safe-top));
+    overflow: hidden;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -80px;
+    width: 380px; height: 380px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(232,184,75,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 52px;
+    letter-spacing: 0.04em;
+    line-height: 0.92;
+    color: var(--text);
+  }
+  .hero-title span { color: var(--gold); }
+  .hero-sub {
+    font-size: 13px;
+    color: var(--text2);
+    margin-top: 10px;
+    font-weight: 300;
+  }
+
+  /* ── TOGGLE ── */
+  .gender-wrap {
+    margin-top: 18px;
+  }
+  .toggle-pills {
+    display: flex;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 999px;
+    padding: 4px;
+    gap: 4px;
+    width: fit-content;
+  }
+  .toggle-pill {
+    padding: 9px 18px;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    background: transparent;
+    color: var(--text2);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .toggle-pill.active {
+    background: var(--gold);
+    color: #0e0f11;
+    box-shadow: 0 2px 12px rgba(232,184,75,0.35);
+  }
+
+  /* ── SCORE BAR (sticky) ── */
+  .score-bar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  .score-bar-left { display: flex; align-items: baseline; gap: 6px; }
+  .score-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 38px;
+    letter-spacing: 0.04em;
+    color: var(--text3);
+    line-height: 1;
+    transition: color 0.3s, text-shadow 0.3s;
+  }
+  .score-num.active {
+    color: var(--gold);
+    text-shadow: 0 0 20px rgba(232,184,75,0.3);
+  }
+  .score-bar-unit {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--text3);
+    text-transform: uppercase;
+  }
+  .score-bar-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+  .level-tag {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: var(--gold-pale);
+    color: var(--gold);
+    border: 1px solid rgba(232,184,75,0.25);
+    letter-spacing: 0.03em;
+    opacity: 0;
+    transition: opacity 0.3s;
+    white-space: nowrap;
+  }
+  .level-tag.show { opacity: 1; }
+  .prog-bar {
+    width: 120px;
+    height: 3px;
+    background: var(--bg4);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .prog-fill {
+    height: 100%;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--gold-dim), var(--gold));
+    transition: width 0.5s cubic-bezier(0.34,1.56,0.64,1);
+    width: 0;
+  }
+
+  /* ── EVENTS ── */
+  .events-section { padding: 16px 16px 8px; }
+  .day-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.22em;
+    color: var(--gold);
+    opacity: 0.6;
+    margin: 20px 0 10px 4px;
+  }
+  .day-label:first-of-type { margin-top: 4px; }
+
+  .event-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 14px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 7px;
+    transition: border-color 0.2s;
+    animation: fadeSlide 0.3s ease both;
+  }
+  .event-row:active { border-color: var(--border2); }
+  @keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .event-num {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text3);
+    flex-shrink: 0;
+  }
+  .event-icon { font-size: 16px; flex-shrink: 0; width: 24px; text-align: center; }
+  .event-info { flex: 1; min-width: 0; }
+  .event-name { font-size: 13px; font-weight: 500; color: var(--text); }
+  .event-hint { font-size: 10px; color: var(--text3); font-family: 'DM Mono', monospace; margin-top: 1px; letter-spacing: 0.02em; }
+
+  .event-input {
+    width: 96px;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    color: var(--text);
+    text-align: right;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+    -webkit-appearance: none;
+  }
+  .event-input:focus {
+    border-color: var(--gold-dim);
+    box-shadow: 0 0 0 3px var(--gold-pale);
+  }
+  .event-input::placeholder { color: var(--text3); }
+
+  .event-pts {
+    width: 52px;
+    text-align: right;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 0.04em;
+    color: var(--text3);
+    flex-shrink: 0;
+    transition: color 0.3s, transform 0.2s;
+  }
+  .event-pts.has-pts { color: var(--gold); }
+  .event-pts.elite { color: var(--green); }
+  .event-pts.pop { animation: ptsPop 0.22s ease; }
+  @keyframes ptsPop {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.28); }
+    100% { transform: scale(1); }
+  }
+
+  /* ── SUMMARY TABLE ── */
+  .summary-section {
+    margin: 8px 16px 32px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .summary-head {
+    padding: 14px 16px 10px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .summary-head-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text3);
+  }
+  .summary-total-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 26px;
+    color: var(--gold);
+    letter-spacing: 0.04em;
+  }
+  table.sum { width: 100%; border-collapse: collapse; }
+  table.sum tr { border-bottom: 1px solid var(--border); }
+  table.sum tr:last-child { border-bottom: none; }
+  table.sum td { padding: 8px 12px; font-size: 12px; vertical-align: middle; }
+  .sc-num { color: var(--text3); font-family: 'DM Mono', monospace; font-size: 10px; width: 18px; }
+  .sc-name { color: var(--text2); }
+  .sc-perf { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text2); text-align: right; }
+  .sc-bar-td { width: 44px; padding: 8px 6px; }
+  .sc-mini-bar { height: 3px; background: var(--bg4); border-radius: 2px; }
+  .sc-mini-fill { height: 3px; background: var(--gold-dim); border-radius: 2px; transition: width 0.4s; width: 0; }
+  .sc-pts {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px;
+    letter-spacing: 0.03em;
+    color: var(--text3);
+    text-align: right;
+    width: 40px;
+    transition: color 0.3s;
+  }
+  .sc-pts.lit { color: var(--gold); }
+  .sum-total-row td { background: var(--bg3); }
+  .sum-total-row .sc-name { font-weight: 500; color: var(--text); font-size: 13px; }
+  .sum-total-row .sc-pts { color: var(--gold); font-size: 20px; }
+
+  /* ── FOOTER ── */
+  .footer {
+    text-align: center;
+    padding: 16px 20px 24px;
+    font-size: 11px;
+    color: var(--text3);
+    line-height: 1.7;
+    border-top: 1px solid var(--border);
+  }
+  .footer a { color: var(--gold-dim); text-decoration: none; }
+
+  ::-webkit-scrollbar { width: 3px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- Install banner -->
+<div id="install-banner">
+  <span>📲 Installer l'application sur cet appareil</span>
+  <div style="display:flex;gap:6px;flex-shrink:0;">
+    <button id="install-btn">Installer</button>
+    <button id="install-dismiss">✕</button>
+  </div>
+</div>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-label">World Athletics · Tables de points 2023</div>
+  <div class="hero-title">ÉPREUVES<br><span>COMBINÉES</span></div>
+  <div class="hero-sub">Heptathlon · Décathlon — Calcul officiel des points</div>
+  <div class="gender-wrap">
+    <div class="toggle-pills">
+      <button class="toggle-pill active" id="btn-f" onclick="setGender('F')">♀ Heptathlon</button>
+      <button class="toggle-pill" id="btn-m" onclick="setGender('M')">♂ Décathlon</button>
+    </div>
+  </div>
+</div>
+
+<!-- Sticky score bar -->
+<div class="score-bar">
+  <div class="score-bar-left">
+    <div class="score-num" id="score-num">0</div>
+    <div class="score-bar-unit">points</div>
+  </div>
+  <div class="score-bar-right">
+    <div class="level-tag" id="level-tag">—</div>
+    <div class="prog-bar"><div class="prog-fill" id="prog-fill"></div></div>
+  </div>
+</div>
+
+<!-- Events -->
+<div class="events-section" id="events-section"></div>
+
+<!-- Summary -->
+<div class="summary-section">
+  <div class="summary-head">
+    <div class="summary-head-title">Récapitulatif</div>
+    <div class="summary-total-num" id="sum-total">—</div>
+  </div>
+  <table class="sum" id="sum-table"></table>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  Formules officielles World Athletics<br>
+  <a href="https://worldathletics.org/about-iaaf/documents/technical-information" target="_blank">worldathletics.org</a>
+</div>
+
+<script>
+const EVENTS = {
+  F: [
+    { day:1, id:'h100', name:'100m haies', icon:'🏃', type:'track',    A:9.23076,  B:26.7, C:1.835, placeholder:'13.00', hint:'secondes (ex: 13.54)' },
+    { day:1, id:'hj',   name:'Hauteur',    icon:'🏅', type:'jump',     A:1.84523,  B:75,   C:1.348, placeholder:'1.82',  hint:'mètres (ex: 1.86)' },
+    { day:1, id:'sp',   name:'Poids',      icon:'⚫', type:'throw',    A:56.0211,  B:1.5,  C:1.05,  placeholder:'14.50', hint:'mètres (ex: 14.50)' },
+    { day:1, id:'200',  name:'200m',       icon:'💨', type:'track',    A:4.99087,  B:42.5, C:1.81,  placeholder:'23.50', hint:'secondes (ex: 23.54)' },
+    { day:2, id:'lj',   name:'Longueur',   icon:'🦘', type:'jump',     A:0.188807, B:210,  C:1.41,  placeholder:'6.50',  hint:'mètres (ex: 6.52)' },
+    { day:2, id:'jav',  name:'Javelot',    icon:'🎯', type:'throw',    A:15.9803,  B:3.8,  C:1.04,  placeholder:'47.50', hint:'mètres (ex: 47.50)' },
+    { day:2, id:'800',  name:'800m',       icon:'🔄', type:'track_mid',A:0.11193,  B:254,  C:1.88,  placeholder:'2:10.00', hint:'min:sec (ex: 2:05.40)' },
+  ],
+  M: [
+    { day:1, id:'100',  name:'100m',       icon:'💨', type:'track',     A:25.4347,  B:18,   C:1.81,  placeholder:'10.50',   hint:'secondes (ex: 10.54)' },
+    { day:1, id:'lj',   name:'Longueur',   icon:'🦘', type:'jump',      A:0.14354,  B:220,  C:1.40,  placeholder:'7.50',    hint:'mètres (ex: 7.52)' },
+    { day:1, id:'sp',   name:'Poids',      icon:'⚫', type:'throw',     A:51.39,    B:1.5,  C:1.05,  placeholder:'15.50',   hint:'mètres (ex: 15.50)' },
+    { day:1, id:'hj',   name:'Hauteur',    icon:'🏅', type:'jump',      A:0.8465,   B:75,   C:1.42,  placeholder:'2.10',    hint:'mètres (ex: 2.12)' },
+    { day:1, id:'400',  name:'400m',       icon:'🏃', type:'track',     A:1.53775,  B:82,   C:1.81,  placeholder:'47.50',   hint:'secondes (ex: 47.50)' },
+    { day:2, id:'110h', name:'110m haies', icon:'⛹', type:'track',     A:5.74352,  B:28.5, C:1.92,  placeholder:'14.00',   hint:'secondes (ex: 14.00)' },
+    { day:2, id:'dis',  name:'Disque',     icon:'🥏', type:'throw',     A:12.91,    B:4,    C:1.10,  placeholder:'45.00',   hint:'mètres (ex: 45.00)' },
+    { day:2, id:'pv',   name:'Perche',     icon:'🎋', type:'jump',      A:0.2797,   B:100,  C:1.35,  placeholder:'5.00',    hint:'mètres (ex: 5.00)' },
+    { day:2, id:'jav',  name:'Javelot',    icon:'🎯', type:'throw',     A:10.14,    B:7,    C:1.08,  placeholder:'65.00',   hint:'mètres (ex: 65.00)' },
+    { day:2, id:'1500', name:'1500m',      icon:'🔄', type:'track_long',A:0.03768,  B:480,  C:1.85,  placeholder:'4:10.00', hint:'min:sec (ex: 4:10.00)' },
+  ]
+};
+const LEVELS = {
+  F:[[7000,'Record du monde'],[6500,'Élite mondiale'],[6000,'Niveau international'],[5500,'National A'],[5000,'National B'],[4500,'Régional A'],[4000,'Régional B'],[0,'Débutant·e']],
+  M:[[9000,'Record du monde'],[8500,'Élite mondiale'],[8000,'Niveau international'],[7500,'National A'],[7000,'National B'],[6000,'Régional A'],[5000,'Régional B'],[0,'Débutant·e']]
+};
+const MAX_PTS = { F:7291, M:9126 };
+let gender = 'F';
+const vals = {};
+const prevPts = {};
+
+function parseTime(s) {
+  s = String(s).trim();
+  if (s.includes(':')) { const p = s.split(':'); return parseFloat(p[0])*60+parseFloat(p[1]); }
+  return parseFloat(s);
+}
+function calcPts(ev, raw) {
+  if (!raw || raw==='') return 0;
+  let P = (ev.type==='track_mid'||ev.type==='track_long') ? parseTime(raw) : parseFloat(raw);
+  if (isNaN(P)||P<=0) return 0;
+  let pts=0;
+  if (ev.type==='track'||ev.type==='track_mid'||ev.type==='track_long') {
+    if (P>=ev.B) return 0; pts=ev.A*Math.pow(ev.B-P,ev.C);
+  } else if (ev.type==='jump') {
+    const cm=P*100; if (cm<=ev.B) return 0; pts=ev.A*Math.pow(cm-ev.B,ev.C);
+  } else {
+    if (P<=ev.B) return 0; pts=ev.A*Math.pow(P-ev.B,ev.C);
+  }
+  return Math.max(0,Math.floor(pts));
+}
+function fmtPerf(ev, raw) {
+  if (!raw) return '—';
+  if (ev.type==='track_mid'||ev.type==='track_long') {
+    const s=parseTime(raw); if (isNaN(s)) return raw;
+    const m=Math.floor(s/60); const sec=(s-m*60).toFixed(2).padStart(5,'0');
+    return m+':'+sec;
+  }
+  return isNaN(parseFloat(raw)) ? raw : raw;
+}
+function getLevel(t) { for (const [v,l] of LEVELS[gender]) if (t>=v) return l; return ''; }
+
+function render() {
+  const sec = document.getElementById('events-section');
+  const evs = EVENTS[gender];
+  sec.innerHTML = '';
+  const days = [...new Set(evs.map(e=>e.day))];
+  days.forEach(d => {
+    const dl = document.createElement('div');
+    dl.className = 'day-label';
+    dl.textContent = d===1 ? 'JOUR 1' : 'JOUR 2';
+    sec.appendChild(dl);
+    evs.filter(e=>e.day===d).forEach(ev => {
+      const i = evs.indexOf(ev);
+      const pts = calcPts(ev, vals[ev.id]||'');
+      const row = document.createElement('div');
+      row.className = 'event-row';
+      row.style.animationDelay = (i*40)+'ms';
+      row.innerHTML = `
+        <div class="event-num">${i+1}</div>
+        <div class="event-icon">${ev.icon}</div>
+        <div class="event-info">
+          <div class="event-name">${ev.name}</div>
+          <div class="event-hint">${ev.hint}</div>
+        </div>
+        <input class="event-input" id="inp-${ev.id}" type="text" inputmode="decimal"
+          placeholder="${ev.placeholder}" value="${vals[ev.id]||''}" autocomplete="off" spellcheck="false"/>
+        <div class="event-pts ${pts>=1000?'elite':pts>0?'has-pts':''}" id="pts-${ev.id}">${pts>0?pts:'—'}</div>
+      `;
+      sec.appendChild(row);
+      row.querySelector('input').addEventListener('input', e => {
+        vals[ev.id] = e.target.value;
+        updateAll();
+      });
+    });
+  });
+  buildSummary();
+  updateAll();
+}
+
+function buildSummary() {
+  const evs = EVENTS[gender];
+  const tbl = document.getElementById('sum-table');
+  tbl.innerHTML = '';
+  evs.forEach((ev,i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="sc-num">${i+1}</td>
+      <td class="sc-name">${ev.name}</td>
+      <td class="sc-perf" id="sc-perf-${ev.id}">—</td>
+      <td class="sc-bar-td"><div class="sc-mini-bar"><div class="sc-mini-fill" id="sc-bar-${ev.id}"></div></div></td>
+      <td class="sc-pts" id="sc-pts-${ev.id}">—</td>
+    `;
+    tbl.appendChild(tr);
+  });
+  const totTr = document.createElement('tr');
+  totTr.className = 'sum-total-row';
+  totTr.innerHTML = `<td></td><td class="sc-name">Total</td><td class="sc-perf"></td><td></td><td class="sc-pts" id="sc-total">—</td>`;
+  tbl.appendChild(totTr);
+}
+
+function updateAll() {
+  const evs = EVENTS[gender];
+  let total = 0;
+  evs.forEach(ev => {
+    const raw = vals[ev.id]||'';
+    const pts = calcPts(ev, raw);
+    total += pts;
+    // inline
+    const pEl = document.getElementById('pts-'+ev.id);
+    if (pEl) {
+      if (pts !== (prevPts[ev.id]||0) && pts>0) {
+        pEl.classList.remove('pop'); void pEl.offsetWidth; pEl.classList.add('pop');
+      }
+      pEl.textContent = pts>0 ? pts : '—';
+      pEl.className = 'event-pts'+(pts>=1000?' elite':pts>0?' has-pts':'');
+      prevPts[ev.id] = pts;
+    }
+    // summary
+    const sp=document.getElementById('sc-pts-'+ev.id);
+    const sf=document.getElementById('sc-perf-'+ev.id);
+    const sb=document.getElementById('sc-bar-'+ev.id);
+    if(sp){sp.textContent=pts>0?pts:'—';sp.className='sc-pts'+(pts>0?' lit':'');}
+    if(sf) sf.textContent=raw?fmtPerf(ev,raw):'—';
+    if(sb) sb.style.width=pts>0?Math.min(100,Math.round(pts/12))+'%':'0';
+  });
+  // score bar
+  const sn = document.getElementById('score-num');
+  sn.textContent = total.toLocaleString('fr-FR');
+  total>0 ? sn.classList.add('active') : sn.classList.remove('active');
+  const lt = document.getElementById('level-tag');
+  if (total>0) { lt.textContent=getLevel(total); lt.classList.add('show'); }
+  else { lt.classList.remove('show'); }
+  const pf = document.getElementById('prog-fill');
+  pf.style.width = total>0 ? Math.min(100,Math.round(total/MAX_PTS[gender]*100))+'%' : '0';
+  // summary total
+  const st = document.getElementById('sc-total');
+  if(st) st.textContent = total>0 ? total.toLocaleString('fr-FR') : '—';
+  const sumTot = document.getElementById('sum-total');
+  if(sumTot) sumTot.textContent = total>0 ? total.toLocaleString('fr-FR') : '—';
+}
+
+function setGender(g) {
+  gender = g;
+  document.getElementById('btn-f').className='toggle-pill'+(g==='F'?' active':'');
+  document.getElementById('btn-m').className='toggle-pill'+(g==='M'?' active':'');
+  for(const k of Object.keys(vals)) delete vals[k];
+  for(const k of Object.keys(prevPts)) delete prevPts[k];
+  render();
+}
+
+// ── PWA install prompt ──
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('install-banner').classList.add('show');
+});
+document.getElementById('install-btn').addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  document.getElementById('install-banner').classList.remove('show');
+});
+document.getElementById('install-dismiss').addEventListener('click', () => {
+  document.getElementById('install-banner').classList.remove('show');
+});
+window.addEventListener('appinstalled', () => {
+  document.getElementById('install-banner').classList.remove('show');
+});
+
+// ── Service Worker ──
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(e => console.warn('SW:', e));
+  });
+}
+
+render();
+</script>
+</body>
+</html>
